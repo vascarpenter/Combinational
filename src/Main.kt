@@ -28,11 +28,11 @@ import javax.swing.UIManager
     some prompt
     # 3 .. series 3
     just another prompt
-
  */
+
 fun main()
 {
-    val f = JFrame("Combinational Order Converter")
+    val f = JFrame("v1.1 SD prompts Combinational Reorderer")
     val g = gui()
     UIManager.put("OptionPane.messageFont", Font("Dialog", Font.PLAIN, 12))
     UIManager.put("OptionPane.buttonFont", Font("Dialog", Font.PLAIN, 12))
@@ -44,6 +44,9 @@ fun main()
     f.isVisible = true
     g.convertButton.addActionListener {
         convertText(g)
+    }
+    g.resetButton.addActionListener {
+        resetText(g)
     }
 }
 
@@ -57,41 +60,23 @@ fun isNumeric(toCheck: String): Boolean
     return toCheck.toIntOrNull() != null
 }
 
-fun convertText(g: gui)
+fun analyzeText(t: String) : Map<Int, String>
 {
-    // add more lines... currently max 16 lines
-    val sequence = arrayOf(
-        arrayOf(2, 1),
-        arrayOf(2, 1, 3),
-        arrayOf(2, 1, 3, 4),
-        arrayOf(2, 1, 5, 3, 4),
-        arrayOf(2, 1, 5, 6, 3, 4),
-        arrayOf(2, 7, 1, 5, 6, 3, 4),
-        arrayOf(2, 7, 1, 5, 6, 3, 4, 8),
-        arrayOf(2, 9, 7, 1, 5, 6, 3, 4, 8),
-        arrayOf(2, 9, 7, 1, 5, 6, 3, 10, 4, 8),
-        arrayOf(2, 9, 7, 1, 5, 6, 3, 10, 4, 8, 11),
-        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 10, 11, 4, 8),
-        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 10, 13, 4, 8, 11),
-        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 10, 13, 4, 8, 11, 14),
-        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 15, 10, 13, 4, 8, 11, 14),
-        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 15, 10, 9, 11, 4, 16, 8, 14)
-    )
+    var prompts = mutableMapOf<Int,String>()
 
-    var tx = getClipboardString()
+    var tx = t
     if (!tx.endsWith("\n"))
     {
         // 改行で終わっていない場合追加しておく
         tx += "\n"
     }
+
     var tt: String
     var headerblock = ""
-    var prompts = emptyArray<String>()
     val st = StringTokenizer(tx, "\n")
     if (!st.hasMoreTokens())
     {
-        notPrompt(g)
-        return
+        return prompts
     }
     var t = st.nextToken().trim { it <= ' ' } // １行
 
@@ -134,14 +119,7 @@ fun convertText(g: gui)
                             break
                         }
                     }
-                    if (prompts.getOrNull(rownum - 1) != null)
-                    { // specific position
-                        prompts[rownum - 1] = prompt
-                    }
-                    else
-                    {  // out of bounds, simply add to tail
-                        prompts += prompt
-                    }
+                    prompts.putIfAbsent(rownum, prompt)   // put at rownum , override if exist, add if absent
                 }
             }
         }
@@ -150,17 +128,74 @@ fun convertText(g: gui)
             t = st.nextToken().trim { it <= ' ' }
         }
     }
+
+    prompts.putIfAbsent(-1,headerblock)
+    return prompts
+}
+
+fun resetText(g: gui)
+{
+    var tx = getClipboardString()
+    var prompts = analyzeText(tx)
     if (prompts.size < 2)
     {
         notPrompt(g)
         return
     }
-    var j = 0
-    tt = headerblock
-    for (i in prompts)
+
+    var tt = prompts.getOrDefault(-1, "")
+    var maxsize = prompts.size - 1   // prompts.size = max num of prompts + headerblock, so -1
+    for (i in 1..maxsize)
     {
-        //println("prompts $j: " + prompts[sequence[prompts.size-2][j]-1])
-        tt += prompts[sequence[prompts.size - 2][j] - 1]
+        tt += prompts.getOrDefault(i,"")        // if num absent, skip with ""
+    }
+    g.textArea1.text = tt
+    setClipboardString(tt)
+
+}
+
+fun convertText(g: gui)
+{
+    // add more lines... currently max 16 lines
+    val sequence: Array<Array<Int>> = arrayOf(
+        arrayOf(2, 1),
+        arrayOf(2, 1, 3),
+        arrayOf(2, 1, 3, 4),
+        arrayOf(2, 1, 5, 3, 4),
+        arrayOf(2, 1, 5, 6, 3, 4),
+        arrayOf(2, 7, 1, 5, 6, 3, 4),
+        arrayOf(2, 7, 1, 5, 6, 3, 4, 8),
+        arrayOf(2, 9, 7, 1, 5, 6, 3, 4, 8),
+        arrayOf(2, 9, 7, 1, 5, 6, 3, 10, 4, 8),
+        arrayOf(2, 9, 7, 1, 5, 6, 3, 10, 4, 8, 11),
+        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 10, 4, 8, 11),
+        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 10, 13, 4, 8, 11),
+        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 10, 13, 4, 8, 11, 14),
+        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 15, 10, 13, 4, 8, 11, 14),
+        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 15, 10, 13, 4, 16, 8, 11, 14),
+        arrayOf(2, 9, 12, 7, 1, 5, 6, 3, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(2, 9, 12, 7, 1, 5, 18, 6, 3, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 7, 1, 5, 18, 6, 3, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 7, 1, 5, 18, 6, 3, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 7, 21, 1, 5, 18, 6, 3, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14)
+    )
+
+
+    var tx = getClipboardString()
+    var prompts = analyzeText(tx)
+    if (prompts.size < 2)
+    {
+        notPrompt(g)
+        return
+    }
+
+    var j = 0
+    var tt = prompts.getOrDefault(-1, "")
+    var maxsize = prompts.size - 1   // prompts.size = max num of prompts + headerblock, so -1
+    for (i in 0..maxsize-1)
+    {
+        //println("prompts $j: " + prompts.get(sequence[maxsize - 2][j]))
+        tt += prompts.getOrDefault(sequence[maxsize - 2][j], "")  // why 2?  array starts 2
         j += 1
     }
     g.textArea1.text = tt
