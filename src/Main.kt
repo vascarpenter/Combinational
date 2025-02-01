@@ -60,18 +60,17 @@ fun isNumeric(toCheck: String): Boolean
     return toCheck.toIntOrNull() != null
 }
 
-fun analyzeText(t: String) : Map<Int, String>
+fun analyzeText(txx: String) : Map<Int, String>
 {
-    var prompts = mutableMapOf<Int,String>()
+    val prompts = mutableMapOf<Int,String>()
 
-    var tx = t
+    var tx = txx
     if (!tx.endsWith("\n"))
     {
         // 改行で終わっていない場合追加しておく
         tx += "\n"
     }
 
-    var tt: String
     var headerblock = ""
     val st = StringTokenizer(tx, "\n")
     if (!st.hasMoreTokens())
@@ -119,7 +118,7 @@ fun analyzeText(t: String) : Map<Int, String>
                             break
                         }
                     }
-                    prompts.putIfAbsent(rownum, prompt)   // put at rownum , override if exist, add if absent
+                    prompts.putIfAbsent(rownum, prompt)   // put at rownum , override if it exists, add if absent
                 }
             }
         }
@@ -135,8 +134,8 @@ fun analyzeText(t: String) : Map<Int, String>
 
 fun resetText(g: gui)
 {
-    var tx = getClipboardString()
-    var prompts = analyzeText(tx)
+    val tx = getClipboardString()
+    val prompts = analyzeText(tx)
     if (prompts.size < 2)
     {
         notPrompt(g)
@@ -144,7 +143,7 @@ fun resetText(g: gui)
     }
 
     var tt = prompts.getOrDefault(-1, "")
-    var maxsize = prompts.size - 1   // prompts.size = max num of prompts + headerblock, so -1
+    val maxsize = prompts.size - 1   // prompts.size = max num of prompts + headerblock, so -1
     for (i in 1..maxsize)
     {
         tt += prompts.getOrDefault(i,"")        // if num absent, skip with ""
@@ -156,8 +155,8 @@ fun resetText(g: gui)
 
 fun convertText(g: gui)
 {
-    // add more lines... currently max 16 lines
-    val sequence: Array<Array<Int>> = arrayOf(
+    // add more lines... made by copilot
+    val sequence = arrayOf(
         arrayOf(2, 1),
         arrayOf(2, 1, 3),
         arrayOf(2, 1, 3, 4),
@@ -177,26 +176,45 @@ fun convertText(g: gui)
         arrayOf(2, 9, 12, 7, 1, 5, 18, 6, 3, 15, 10, 13, 4, 16, 17, 8, 11, 14),
         arrayOf(19, 2, 9, 12, 7, 1, 5, 18, 6, 3, 15, 10, 13, 4, 16, 17, 8, 11, 14),
         arrayOf(19, 2, 9, 12, 7, 1, 5, 18, 6, 3, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
-        arrayOf(19, 2, 9, 12, 7, 21, 1, 5, 18, 6, 3, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14)
+        arrayOf(19, 2, 9, 12, 7, 21, 1, 5, 18, 6, 3, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 7, 21, 1, 5, 18, 6, 22, 3, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 7, 21, 1, 5, 18, 6, 22, 3, 23, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 17, 8, 11, 14),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 17, 8, 11, 26, 14),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 27, 17, 8, 11, 26, 14),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 27, 17, 8, 11, 26, 27, 14),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 27, 17, 29, 8, 11, 26, 28, 14),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 13, 4, 16, 27, 17, 29, 8, 11, 26, 28, 14, 30),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 31, 13, 4, 16, 27, 17, 29, 8, 11, 26, 28, 14, 30),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 31, 13, 32, 4, 16, 27, 17, 29, 8, 11, 26, 28, 14, 30),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 31, 13, 32, 4, 16, 27, 17, 33, 29, 8, 11, 26, 28, 14, 30),
+        arrayOf(19, 2, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 31, 13, 32, 4, 16, 27, 17, 33, 34, 29, 8, 11, 26, 28, 14, 30),
+        arrayOf(19, 2, 35, 9, 12, 25, 7, 21, 1, 5, 18, 6, 24, 22, 3, 23, 20, 15, 10, 31, 13, 32, 4, 16, 27, 17, 33, 34, 29, 8, 11, 26, 28, 14, 30)
     )
 
 
-    var tx = getClipboardString()
-    var prompts = analyzeText(tx)
+    val tx = getClipboardString()
+    val prompts = analyzeText(tx)
     if (prompts.size < 2)
     {
         notPrompt(g)
         return
     }
 
-    var j = 0
+    // 2 1 5 3 4 .. should 2 1 4 5 3
     var tt = prompts.getOrDefault(-1, "")
-    var maxsize = prompts.size - 1   // prompts.size = max num of prompts + headerblock, so -1
-    for (i in 0..maxsize-1)
+    val maxsize = prompts.size - 1   // prompts.size = max num of prompts + headerblock, so -1
+    var seq = IntArray(maxsize)
+    for (i in 0..<maxsize)
     {
-        //println("prompts $j: " + prompts.get(sequence[maxsize - 2][j]))
-        tt += prompts.getOrDefault(sequence[maxsize - 2][j], "")  // why 2?  array starts 2
-        j += 1
+        seq[sequence[maxsize - 2][i]-1] = i  // why 2?  array starts 2
+    }
+//    println( seq.contentToString())
+
+    for (i in 0..<maxsize)
+    {
+        tt += prompts.getOrDefault(seq[i]+1, "")
     }
     g.textArea1.text = tt
     setClipboardString(tt)
