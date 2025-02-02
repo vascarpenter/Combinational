@@ -208,13 +208,13 @@ fun convertText(g: gui)
     var seq = IntArray(maxsize)
     for (i in 0..<maxsize)
     {
-        seq[sequence[maxsize - 2][i]-1] = i  // why 2?  array starts 2
+        seq[i] = sequence[maxsize - 2][i]  // why 2?  array starts 2
     }
 //    println( seq.contentToString())
 
     for (i in 0..<maxsize)
     {
-        tt += prompts.getOrDefault(seq[i]+1, "")
+        tt += prompts.getOrDefault(seq[i], "")
     }
     g.textArea1.text = tt
     setClipboardString(tt)
